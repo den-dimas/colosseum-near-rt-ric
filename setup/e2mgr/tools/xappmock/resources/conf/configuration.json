@@ -43,7 +43,7 @@
   },
   {
     "id": "RIC_INDICATION",
-    "rmrMessageType": "12050"
+    "rmrMessageType": "12060"
   },
   {
     "id": "RESOURCE_STATUS_REQUEST",
@@ -72,4 +72,3 @@
     "rmrMessageType": "10020"
   }
 ]
-

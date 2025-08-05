@@ -70,50 +70,51 @@ using namespace rapidjson;
 
 #define DEBUG 0
 
-class Xapp{
+class Xapp {
 public:
 
-  Xapp(XappSettings &, XappRmr &);
+  Xapp(XappSettings&, XappRmr&);
 
   ~Xapp(void);
 
   void stop(void);
 
-  void startup(SubscriptionHandler &);
+  void startup(SubscriptionHandler&);
   void shutdown(void);
 
-  void start_xapp_receiver(XappMsgHandler &);
+  void start_xapp_receiver(XappMsgHandler&);
   void Run();
 
   void sdl_data(void);
+  std::string get_kpm_data();
 
-  Xapp(Xapp const &)=delete;
-  Xapp& operator=(Xapp const &) = delete;
+  Xapp(Xapp const&) = delete;
+  Xapp& operator=(Xapp const&) = delete;
 
-  void register_handler(XappMsgHandler &fn){
+  void register_handler(XappMsgHandler& fn) {
     _callbacks.emplace_back(fn);
   }
 
   //getters/setters.
   void set_rnib_gnblist(void);
-  std::vector<std::string> get_rnib_gnblist(){ return rnib_gnblist; }
+  std::vector<std::string> get_rnib_gnblist() { return rnib_gnblist; }
 
 private:
-  void startup_subscribe_requests(void );
+  void startup_subscribe_requests(void);
   void shutdown_subscribe_deletes(void);
   void send_ric_control_request(char* payload, std::string gnb_id);
-  void startup_get_policies(void );
+  void startup_get_policies(void);
 
   void handle_rx_msg(void);
   void handle_rx_msg_agent(std::string agent_ip);
   void handle_external_control_message(int port);
   void terminate_du_reporting(void);
 
-  XappRmr * rmr_ref;
-  XappSettings * config_ref;
-  SubscriptionHandler *subhandler_ref;
+  XappRmr* rmr_ref;
+  XappSettings* config_ref;
+  SubscriptionHandler* subhandler_ref;
 
-  std::mutex *xapp_mutex;
+  std::mutex* xapp_mutex;
   std::vector<std::thread> xapp_rcv_thread;
   std::vector<std::string> rnib_gnblist;
   std::vector<XappMsgHandler> _callbacks;
