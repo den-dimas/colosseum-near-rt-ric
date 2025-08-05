@@ -15,22 +15,18 @@ This work was partially supported by the U.S. National Science Foundation under 
 This repository is organized as follows
 
 ```
-/root/radio_code/colosseum-near-rt-ric 
+/colosseum-near-rt-ric 
+|
+└──build-ns-o-ran.sh
 |
 └──setup-scripts
 |   |
-|   └──import-base-images.sh
+|   └──import-wines-images.sh
 |   |
-|   └──setup-lib.sh
+|   └──setup-ric-bronze.sh
 |   |
-|   └──setup-ric.sh
+|   └──start-xapp-ns-o-ran.sh
 |   |
-|   └──setup-sample-xapp.sh
-|   |
-|   └──start-ric-arena.sh
-|   |
-|   └──start-xapp.sh
-|   
 └──setup
 |  |
 |  └──dbaas
@@ -42,52 +38,110 @@ This repository is organized as follows
 |  └──xapp-sm-connector
 ```
 
-### Quick start
+## Setup Environment
 
-We provide a Colosseum LXC container that contains this repository, its prerequisites, and base docker images. The container `coloran-near-rt-ric-prebuilt` can be found among the images available for Colosseum users. The default username and password are `root` and `ChangeMe`.
+**======================================**
+**Make sure Docker is installed first**
+**======================================**
 
-From the `setup-scripts` directory:
-- Build, configure, and start the near-real-time RIC Docker containers: `./setup-ric.sh ric-network-interface`, where `ric-network-interface` is the interface from which you want to expose the RIC E2 termination (e.g., `col0` or `can0` in Colosseum).
-- Connect the RAN node through the E2 termination as explained [here](https://github.com/wineslab/colosseum-scope-e2)
-- Get the gNB ID (see section below) and replace it in the `start-xapp.sh` script
-- Configure and start the xApp: `./start-xapp.sh`
+1. Clone the repository.
+```bash
+cd ~
+git clone https://github.com/den-dimas/colosseum-near-rt-ric.git -b ns-o-ran colosseum-near-rt-ric
+```
 
-### setup-scripts directory
+2. Import docker images.
+```bash
+cd ~/colosseum-near-rt-ric/setup-scripts
+./import-wines-images.sh
+```
 
-The `setup-scripts` directory contains scripts to initialize the near-real-time RIC on Colosseum.
-- `import-base-images.sh`: script to import the base Docker images needed to build the RIC Docker containers. These images are provided as part of the `coloran-near-rt-ric` Colosseum LXC container.
-- `setup-lib.sh`: contains the IP addresses and ports used by the Docker containers of this repository. This script has been adapted from [here](https://gitlab.flux.utah.edu/johnsond/ric-profile/-/blob/master/setup-lib.sh)
-- `setup-ric.sh`: script to build, configure, and start the near-real-time RIC containers of this repository (namely, `db`, `e2mgr`, `e2rtmansim`, `e2term`). The network interface the RIC listens to for connections (e.g., the `col0` interface in Colosseum) is passed as argument. This script has been adapted from [here](https://gitlab.flux.utah.edu/johnsond/ric-profile/-/blob/master/setup-ric.sh)
-- `start-ric-arena.sh`: script to start the near-real-time RIC on external testbeds, e.g., on the [Arena platform](https://ece.northeastern.edu/wineslab/arena.php)
-- `setup-sample-xapp.sh`: script to setup a sample xApp Docker container. This xApp is capable of connecting to the [SCOPE](https://github.com/wineslab/colosseum-scope) RAN environment through the following [E2 termination](https://github.com/wineslab/colosseum-scope-e2). Custom or standard-compliant service models can be implemented on top of the RAN E2 termination and the sample xApp, as done for example [in these]() [papers](https://ece.northeastern.edu/wineslab/papers/bonati2021intelligence.pdf)
-- `start-xapp.sh`: script to configure and start the sample xApp. The ID of the gNB targeted by the xApp needs to be provided in the script, as discussed below
+3. Setup RIC Containers.
+```bash
+cd ~/colosseum-near-rt-ric/setup-scripts
+./setup-ric-bronze.sh
+```
 
-### setup directory
+4. Deploy ns-o-ran to Docker
+```bash
+cd ~/colosseum-near-rt-ric/
+./build-ns-o-ran.sh
+```
 
-This directory contains the implementations of the near-real-time RIC Docker container initialized through the scripts in the [`setup-scripts`](setup-scripts) directory.
-- `dbaas`: implementation of a Redis database (`db`) container
-- `e2`: implementation of the E2 termination (`e2term`) container
-- `e2mgr`: implementation of the E2 manager (`e2mgr`) and of the routing manager simulator (`e2rtmansim`) container
-- `sample-xapp`, `xapp-sm-connector`: implementation of the sample xApp provided in this repository and components to connect to the near-real-time RIC and [SCOPE](https://github.com/wineslab/colosseum-scope) RAN environment
+## Running the bw-xapp
 
-These components are adapted from the [O-RAN Software Community RIC platform (Bronze)](https://github.com/o-ran-sc), which we extended to support the Colosseum environment, concurrent connections from multiple base stations and xApps, and to provide improved support for encoding, decoding and routing of control messages.
+This repository is forked from the original Colosseum Near RT RIC Github. I've changed the routing to also support kpimon xApp to be deployed in the environment. I also modified the Dockerfile for building the ns-o-ran which were outdated in the original repository.
 
-### Getting the gNB ID
+I've also changed the `sample-xapp` to `bw-xapp` to retrieve KPM information from SDL (**dummy**) and sends RIC Control Message based on the KPM information. It involves extending the `xapp-sm-connector` message handler to send and receive the KPM data and the created strategy in the `bw-xapp` xApp.
 
-An easy way to derive the gNB ID is the following. From the `setup-scripts` directory:
-- Start the near-real-time RIC Docker containers: `./setup-ric.sh`
-- Read the logs of the `e2term` container: `docker logs e2term -f`
-- Connect the RAN node through the E2 termination as explained [here](https://github.com/wineslab/colosseum-scope-e2)
-- The RAN node should connect to the near-real-time RIC and the gNB ID should appear in the `e2term` logs. In the example below, the gNB ID is `gnb:311-048-01000501`
+To deploy and run the `bw-xapp` to the enviroment:
+```bash
+cd ~/colosseum-near-rt-ric/setup-scripts
+./start-xapp-ns-o-ran.sh
+```
 
-  ```
-  {"ts":1639008174427,"crit":"DEBUG","id":"E2Terminator","mdc":{"thread id":"139898725332736"},"msg":"After processing message and sent to rmr for : gnb:311-048-01000501, Read time is : 0 seconds, 1044889 nanoseconds"}
-  ```
+## System Overview
 
-### Using the provided sample xApp
+The way the `bw-xapp` works is quite simple. The `bw-xapp` itself is just an abstraction from the `xapp-sm-connector`. The `xapp-sm-connector` is actually a modified and extended version of the RIC App HW ([Github](https://github.com/o-ran-sc/ric-app-hw.git)),
 
-The sample xApp provided in this repository connects to the [SCOPE](https://github.com/wineslab/colosseum-scope) RAN environment through the following [E2 termination](https://github.com/wineslab/colosseum-scope-e2).
-After the near-real-time RIC has successfully started, the DU connected to it, and the xApp has been properly configured and started (see "Quick start" section above):
-- Enter the xApp docker container (named `sample-xapp-24` by default): `docker exec -it sample-xapp-24 bash`
-- Move to the `/home/sample-xapp` directory inside the Docker container: `cd /home/sample-xapp`
-- Run the xApp logic: `./run_xapp.sh`. This script will open a socket between the sample Python script in the `sample-xapp` directory (which by defaults prints the data received from the RAN node) and the service model connector of the `xapp-sm-connector` directory, which performs ASN.1 encoding and decoding of E2AP messages. Then, the xApp will subscribe to the RAN node specified at container startup time through the gNB ID, and receive a RIC Indication Message with a data report from the RAN node with the periodicity of 250 ms.
+The `ric-app-hw` is modified so that it can open a communication channel via a socket. This way, the `bw-xapp` need only to send to that socket in order to send a message to the E2Term. The encoding and decoding of the E2SM & E2AP message is done by the `xapp-sm-connector`.
+
+The routing of the environment can be found in the `setup-scripts/setup-ric-bronze.sh` script:
+```sh
+ROUTERFILE=`pwd`/router.txt
+cat << EOF > $ROUTERFILE
+newrt|start
+rte|10020|$E2MGR_IP:3801
+rte|10060|$E2TERM_IP:38000
+rte|10061|$E2MGR_IP:3801
+rte|10062|$E2MGR_IP:3801
+rte|10070|$E2MGR_IP:3801
+rte|10071|$E2MGR_IP:3801
+rte|10080|$E2MGR_IP:3801
+rte|10081|$E2TERM_IP:38000
+rte|10082|$E2TERM_IP:38000
+rte|10360|$E2TERM_IP:38000
+rte|10361|$E2MGR_IP:3801
+rte|10362|$E2MGR_IP:3801
+rte|10370|$E2MGR_IP:3801
+rte|10371|$E2TERM_IP:38000
+rte|10372|$E2TERM_IP:38000
+rte|1080|$E2MGR_IP:3801
+rte|1090|$E2TERM_IP:38000
+rte|1100|$E2MGR_IP:3801
+rte|12010|$E2MGR_IP:38010
+rte|1101|$E2TERM_IP:38000
+rte|12002|$E2TERM_IP:38000
+rte|12003|$E2TERM_IP:38000
+rte|10091|$E2MGR_IP:4801
+rte|10092|$E2MGR_IP:4801
+rte|1101|$E2TERM_IP:38000
+rte|1102|$E2MGR_IP:3801
+rte|12001|$E2MGR_IP:3801
+rte|12011|10.0.2.25:4560      |
+rte|12012|10.0.2.25:4560      |
+rte|12021|10.0.2.25:4560      | ---> Is for kpimon xApp message
+rte|12022|10.0.2.25:4560      | ---> type routing
+rte|12030|10.0.2.25:4560      |
+rte|12050|10.0.2.25:4560      |
+mse|12060|24|10.0.2.24:4560   | ---> is for bw-xapp RIC Indication
+newrt|end
+EOF
+```
+
+## Testing the System
+
+To test and try the system, you can do it without deploying the kpimon xApp first since the integration has not been implemented yet. However, if you want to try the kpimon too, you can see the repository: [kpimon Github](https://github.com/den-dimas/ric-app-kpimon.git).
+
+1. Open two terminal A & B
+2. Terminal A:
+```bash
+docker exec -it ns-o-ran /bin/bash
+cd ns3-mmwave-oran/
+./ns3 run scratch/scenario-zero.cc
+```
+3. Terminal B:
+```bash
+docker exec -it bw-xapp-24 /bin/bash
+/home/bw-xapp/run_xapp.sh
+```
