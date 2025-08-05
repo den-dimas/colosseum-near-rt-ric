@@ -2,7 +2,7 @@
 # BS Connector
 #------------------------------------
 ARG SCHEMA_PATH=schemas
-ARG XAPP_DIR=sample-xapp
+ARG XAPP_DIR=bw-xapp
 ARG CONNECTOR_DIR=xapp-sm-connector
 ARG STAGE_DIR=/home/${CONNECTOR_DIR}
 ARG DBAAS_SERVICE_HOST=10.0.2.12
