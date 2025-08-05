@@ -41,7 +41,9 @@ This repository is organized as follows
 ## Setup Environment
 
 **======================================**
+
 **Make sure Docker is installed first**
+
 **======================================**
 
 1. Clone the repository.
