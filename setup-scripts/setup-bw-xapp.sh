@@ -1,10 +1,10 @@
 #!/bin/sh
-# call as setup-sample-xapp.sh gnb_id
+# call as setup-bw-xapp.sh gnb_id
 
 set -x
 
-IMAGE_NAME=sample-xapp
-MODEL_DIR=sample-xapp
+IMAGE_NAME=bw-xapp
+MODEL_DIR=bw-xapp
 CONNECTOR_DIR=xapp-sm-connector
 DOCKER_FILE=Dockerfile
 SETUP_DIR=../setup

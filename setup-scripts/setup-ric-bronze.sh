@@ -118,9 +118,18 @@ rte|10092|$E2MGR_IP:4801
 rte|1101|$E2TERM_IP:38000
 rte|1102|$E2MGR_IP:3801
 rte|12001|$E2MGR_IP:3801
-mse|12050|$(echo $XAPP_IP | cut -d "." -f 4)|$XAPP_IP:4560
+rte|12011|10.0.2.25:4560
+rte|12012|10.0.2.25:4560
+rte|12021|10.0.2.25:4560
+rte|12022|10.0.2.25:4560
+rte|12030|10.0.2.25:4560
+rte|12050|10.0.2.25:4560
+mse|12060|24|10.0.2.24:4560
 newrt|end
 EOF
+
+# mse|12050|25|10.0.2.25:4560
+# mse|12050|$(echo $XAPP_IP | cut -d "." -f 4)|$XAPP_IP:4560
 
 remove_container() {
     $SUDO docker inspect $1 >/dev/null 2>&1

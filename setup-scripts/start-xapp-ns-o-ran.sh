@@ -1,7 +1,7 @@
 #!/bin/bash
-docker kill sample-xapp-24
-docker rm sample-xapp-24
-docker rmi sample-xapp:latest
-./setup-sample-xapp.sh ns-o-ran
+docker kill bw-xapp-24
+docker rm bw-xapp-24
+docker rmi bw-xapp:latest
+./setup-bw-xapp.sh ns-o-ran
 
-docker exec -it sample-xapp-24 bash
+docker exec -it bw-xapp-24 bash
